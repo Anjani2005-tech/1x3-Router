@@ -1,0 +1,45 @@
+`timescale 1ns/1ps
+
+module tb_router_1x3;
+
+    parameter DATA_WIDTH = 8;
+
+    // Testbench signals
+    reg  [DATA_WIDTH-1:0] data_in;
+    reg  [1:0] sel;
+    reg  en;
+    wire [DATA_WIDTH-1:0] out0, out1, out2;
+
+    // Instantiate the router
+    router_1x3 #(.DATA_WIDTH(DATA_WIDTH)) uut (
+        .data_in(data_in),
+        .sel(sel),
+        .en(en),
+        .out0(out0),
+        .out1(out1),
+        .out2(out2)
+    );
+
+    initial begin
+        // Dump waves for simulation (for GTKWave or ModelSim)
+        $dumpfile("router_1x3_tb.vcd");
+        $dumpvars(0, tb_router_1x3);
+
+        // Test cases
+        en = 1'b0; data_in = 8'hAA; sel = 2'b00; #10; // Disabled, no output
+        en = 1'b1; data_in = 8'h55; sel = 2'b00; #10; // Route to out0
+        en = 1'b1; data_in = 8'h33; sel = 2'b01; #10; // Route to out1
+        en = 1'b1; data_in = 8'hF0; sel = 2'b10; #10; // Route to out2
+        en = 1'b1; data_in = 8'h99; sel = 2'b11; #10; // No valid output
+        en = 1'b0; data_in = 8'h77; sel = 2'b01; #10; // Disabled again
+
+        $finish;
+    end
+
+    // Monitor signals
+    initial begin
+        $monitor("Time=%0t | EN=%b SEL=%b DATA_IN=%h | OUT0=%h OUT1=%h OUT2=%h",
+                 $time, en, sel, data_in, out0, out1, out2);
+    end
+
+endmodule
